@@ -1,15 +1,41 @@
 <html>
 <head>
-  <title>Personal Library</title>
+  <title></title>
   <link rel="icon" type="image/png" href="https://cdn.freecodecamp.org/universal/favicons/favicon-16x16.png" />
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="/public/style.css">
   <style>
-    code {
-      background-color: whitesmoke;
-    }
+  .field{
+    width:180px;
+  }
+
+
+  table{
+  display: none;
+  width: 100%;
+  border-collapse: collapse;
+  top: 40px;
+  left: 40px;
+  }
+  td, th{
+  text-align: center;
+  border: 1px solid black;
+  padding: 10px;
+  }
+
+  form{
+    padding: 20px;
+  }
+
+  .none{
+  pointer-events: none;
+
+  }
+  code {
+  background-color: whitesmoke;
+      }
   </style>
 </head>
 <body>
@@ -19,27 +45,22 @@
 <br>
 <div id ='sampleposting'>
   <h2 style="text-align: left">Filters</h2>
-  <form action="/api/products" method="post" class="border">
+  <form action="" method="post" id='form' class="border">
     <h4>Name</h4>
-    <label for="title" >Name</label>
-    <input type="text" id="nameOfItem" name="nameOfItem" value=""><br>
-    <input type="submit" value="Submit">
-  </form>
-  <form action="/api/products" method="post" id="byPrice" class="border">
+    <label for="nameOfItem" >Name</label>
+    <input type="text" id="nameOfItem" name="name" value=""><br>
+
     <label for="filterTo">FilterToPrice</label>
-    <input type="text" name="filterTo" value="" id="filterTo"><br>
-    <input type="submit" value="Submit">
-  </form>
-  <form action="/api/products" method="post" id="ifExist" class="border">
+    <input type="text" name="price" value="" id="filterTo"><br>
+
     <label for="avialable">Abialable items</label>
-    <input type="text" name="avialable" value="" id="avialable"><br>
+    <input type="text" name="quantity" value="" id="quantity"><br>
     <input type="submit" value="Submit">
   </form>
 </div>
 <hr style='margin: 50px'>
-<div id='list'>
-   <table id='table'><tr><th>id</th><th>Name</th><th>Price</th><th>Quantity</th></table>
-</div>
+<div id='list'> <table id='table'><tr><th>id</th><th>Name</th><th>Price</th><th>Quantity</th></table> </div>
+<div id='info'> </div>
 
 <script src="https://code.jquery.com/jquery-2.2.1.min.js"
         integrity="sha256-gvQgAFzTH6trSrAWoH1iPo9Xc96QxSZ3feW6kem+O00="
@@ -49,28 +70,47 @@
   'use strict'
   
   let list = document.getElementById('list');
+  let formElem = document.querySelector("form");
+  let name = document.getElementById('nameOfItem');
+  let price = document.getElementById('filterTo');
+  let quantity = document.getElementById('quantity');
+  let infoErr = document.getElementById('info');
   let tbl = document.getElementById('table');
 
-    fetch('/products')
+    formElem.onsubmit = async (e) => {
+      infoErr.innerHTML = '';
+      tbl.innerHTML = '';
+      let bodyJSON = JSON.stringify({name: name.value, price: price.value, quantity: quantity.value});
+      e.preventDefault();
+      
+
+    fetch('/products', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: bodyJSON })
       .then(response => response.json())
       .then(result => {
-          let products = JSON.parse(result);
-          getTbl(tbl, products);
-  
+          if(!result.errors){
+            tbl.style.cssText += 'display: inline';
+            let products = JSON.parse(result);
+            console.log(result, 'result090u');
+            getTbl(tbl,products);
+          }else{
+            console.log(result.errors) 
+            result.errors.map(item => infoErr.innerHTML += `<li>${item.msg} on field ${item.param} - ${item.value}`) 
+        }
+           
         })
       .catch(err => {
-        console.log('err1', err);
+        console.log('err', err);
       })
+
+  };
 
 
 function getTbl(elem, arr){
-  console.log(arr, 'arrrrr')
 
   for(let i = 0; i < arr.length ; i++){
     let tr = createEl('tr', elem);
     for(let key in arr[i]){
       let td = createEl('td', tr);
-      console.log(arr[i][key], 'key')
         td.innerHTML = arr[i][key]
     }
   }

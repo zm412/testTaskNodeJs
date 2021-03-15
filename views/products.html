@@ -1,0 +1,82 @@
+<html>
+<head>
+  <title></title>
+  <link rel="icon" type="image/png" href="https://cdn.freecodecamp.org/universal/favicons/favicon-16x16.png" />
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/public/style.css">
+  <style>
+    code {
+      background-color: whitesmoke;
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Personal Library</h1>
+</header>
+<br>
+<div id ='sampleposting'>
+  <h2 style="text-align: left">Filters</h2>
+
+  <hr style='margin: 50px'>
+<div id='list'>
+   <table id='table'><tr><th>id</th><th>Name</th><th>Price</th><th>Quantity</th></table>
+</div>
+
+<script src="https://code.jquery.com/jquery-2.2.1.min.js"
+        integrity="sha256-gvQgAFzTH6trSrAWoH1iPo9Xc96QxSZ3feW6kem+O00="
+        crossorigin="anonymous"></script>
+<script src="/public/client.js"></script>
+<script>
+  'use strict'
+  
+  let list = document.getElementById('list');
+  let tbl = document.getElementById('table');
+
+    fetch('/products')
+      .then(response => response.json())
+      .then(result => {
+          let products = JSON.parse(result);
+          getTbl(tbl, products);
+  
+        })
+      .catch(err => {
+        console.log('err1', err);
+      })
+
+
+fetch('/products', {method: 'post'} )
+      .then(response => response.json())
+      .then(result => {
+          let products = JSON.parse(result);
+          getTbl(tbl, products);
+  
+        })
+      .catch(err => {
+        console.log('err1', err);
+      })
+
+function getTbl(elem, arr){
+  console.log(arr, 'arrrrr')
+
+  for(let i = 0; i < arr.length ; i++){
+    let tr = createEl('tr', elem);
+    for(let key in arr[i]){
+      let td = createEl('td', tr);
+      console.log(arr[i][key], 'key')
+        td.innerHTML = arr[i][key]
+    }
+  }
+}
+
+function createEl(tag, par ){
+	let el = document.createElement(tag);
+		par.appendChild(el);
+		return el;
+}
+
+</script>
+</body>
+</html>
