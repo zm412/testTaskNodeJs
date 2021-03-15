@@ -4,19 +4,20 @@ const express     = require('express');
 const bodyParser  = require('body-parser');
 const cors        = require('cors');
 const config = require('./config');
+let mongoose = require('mongoose');
 
 const apiRoutes         = require('./routes/api.js');
 const fccTestingRoutes  = require('./routes/fcctesting.js');
 const runner            = require('./test-runner');
-//const models = require('./models');
-//let mongoose = require('mongoose');
+const models = require('./models');
 
 const url = "mongodb://localhost:27017/";
+
+/*
 const MongoClient = require("mongodb").MongoClient;
 const mongoClient = new MongoClient(url, { useUnifiedTopology: true });
 
 //let users = [{name: "Bob", age: 34} , {name: "Alice", age: 21}, {name: "Tom", age: 45}];
-/*
 mongoClient.connect(function(err, client){
 
     const db = client.db("dataB");
@@ -65,7 +66,7 @@ app.use(function(req, res, next) {
 
 //bd
 
-/*
+
 const db = () => {
   return new Promise((resolve, reject) => {
     mongoose.Promise = global.Promise;
@@ -76,7 +77,7 @@ const db = () => {
     .on('close', () => console.log('Db connection closed'))
     .on('open', () => resolve(mongoose.connections[0]));
 
-    mongoose.connect(config.MONGO_URI_FREECAMP, {
+    mongoose.connect(url, {
               useNewUrlParser: true,
               useFindAndModify: false,
               useUnifiedTopology: true
@@ -85,7 +86,6 @@ const db = () => {
 }
 
 db().
-
   then(info => {
   console.log((`Connected to ${info.host}:${info.port}/${info.    name}`))
 
@@ -94,7 +94,7 @@ db().
   process.exit(1)
 });
 
-*/
+
 
 //Start our server and tests!
 app.listen(process.env.PORT || 3000, function () {

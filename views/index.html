@@ -45,18 +45,44 @@
 <br>
 <div id ='sampleposting'>
   <h2 style="text-align: left">Filters</h2>
+
   <form action="" method="post" id='form' class="border">
     <h4>Name</h4>
+    
+    <label for="id">Id</label>
+    <input type="text" id="idOfItem" name="_id" value=""><br>
+
     <label for="nameOfItem" >Name</label>
     <input type="text" id="nameOfItem" name="name" value=""><br>
 
     <label for="filterTo">FilterToPrice</label>
     <input type="text" name="price" value="" id="filterTo"><br>
 
-    <label for="avialable">Abialable items</label>
+    <label for="quantity">Abialable items</label>
     <input type="text" name="quantity" value="" id="quantity"><br>
+
     <input type="submit" value="Submit">
   </form>
+</div>
+
+<div id ='addNew'>
+  <h2 style="text-align: left">Filters</h2>
+
+  <form action="" method="post" id='formAddNew' class="border">
+    <h4>Add new item</h4>
+
+   <label for="nameOfNewItem" >Name of new item</label>
+    <input type="text" id="nameOfNewItem" name="name" value=""><br>
+
+    <label for="priceOfNewItem">Price of new item</label>
+    <input type="text" name="price" value="" id="priceOfNewItem"><br>
+
+    <label for="quantityOfNewItem">Quantity of new item</label>
+    <input type="text" name="quantity" value="" id="quantityOfNewItem"><br>
+
+    <input type="submit" value="Submit">
+  </form>
+  <p id='isAdded'></p>
 </div>
 <hr style='margin: 50px'>
 <div id='list'> <table id='table'><tr><th>id</th><th>Name</th><th>Price</th><th>Quantity</th></table> </div>
@@ -74,13 +100,20 @@
   let name = document.getElementById('nameOfItem');
   let price = document.getElementById('filterTo');
   let quantity = document.getElementById('quantity');
+  let id = document.getElementById('idOfItem');
   let infoErr = document.getElementById('info');
   let tbl = document.getElementById('table');
+  let formAddNew = document.getElementById("formAddNew");
+  let nameOfNew = document.getElementById('nameOfNewItem');
+  let priceOfNew = document.getElementById('priceOfNewItem');
+  let quantityOfNew = document.getElementById('quantityOfNewItem');
+  let isAdded = document.getElementById('isAdded');
+      isAdded.innerHTML = '';
 
     formElem.onsubmit = async (e) => {
       infoErr.innerHTML = '';
       tbl.innerHTML = '';
-      let bodyJSON = JSON.stringify({name: name.value, price: price.value, quantity: quantity.value});
+      let bodyJSON = JSON.stringify({_id:id.value, name: name.value, price: price.value, quantity: quantity.value});
       e.preventDefault();
       
 
@@ -103,6 +136,21 @@
       })
 
   };
+
+    formAddNew.onsubmit = async (e) => {
+      let bodyJSON = JSON.stringify({name: nameOfNew.value, price: priceOfNew.value, quantity: quantityOfNew.value});
+      e.preventDefault();
+      fetch('/new-item', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: bodyJSON })
+        .then(response => response.text())
+        .then(result => {
+          console.log(result, 'newAdded');
+          isAdded.innerHTML = result 
+        })
+      .catch(err => {
+        console.log('err', err);
+      })
+      }
+
 
 
 function getTbl(elem, arr){
