@@ -29,10 +29,6 @@
     padding: 20px;
   }
 
-  .none{
-  pointer-events: none;
-
-  }
   code {
   background-color: whitesmoke;
       }
@@ -85,7 +81,7 @@
   <p id='isAdded'></p>
 </div>
 <hr style='margin: 50px'>
-<div id='list'> <table id='table'><tr><th>id</th><th>Name</th><th>Price</th><th>Quantity</th></table> </div>
+<div id='list'> <table id='table' style="display: none"><tr><th>id</th><th>Name</th><th>Price</th><th>Quantity</th></table> </div>
 <div id='info'> </div>
 
 <script src="https://code.jquery.com/jquery-2.2.1.min.js"
@@ -95,68 +91,49 @@
 <script>
   'use strict'
   
-  let list = document.getElementById('list');
-  let formElem = document.querySelector("form");
-  let name = document.getElementById('nameOfItem');
-  let price = document.getElementById('filterTo');
-  let quantity = document.getElementById('quantity');
-  let id = document.getElementById('idOfItem');
   let infoErr = document.getElementById('info');
+
+        $(function() {
+              $('#isAdded').text('');
+        $('#form').submit(function(e) {
+          $('#table').text('');
+          $.ajax({
+            url: '/api/products',
+            type: 'post',
+            data: $('#form').serialize(),
+            success: function(data) {
+              $('#jsonResult').text(JSON.stringify(data));
+              $('#table').attr('style', "display: inline");
+              let products = JSON.parse(data);
+              console.log(data, 'result090u');
+              getTbl(products);
+            }
+          });
+          e.preventDefault();
+        });
+
+      $('#formAddNew').submit(function(e) {
+          $.ajax({
+            url: '/api/new-item',
+            type: 'post',
+            data: $('#formAddNew').serialize(),
+            success: function(data) {
+              $('#isAdded').text(data);
+            }
+          });
+          e.preventDefault();
+        });
+
+
+        });
+
+
+function getTbl( arr){
+
   let tbl = document.getElementById('table');
-  let formAddNew = document.getElementById("formAddNew");
-  let nameOfNew = document.getElementById('nameOfNewItem');
-  let priceOfNew = document.getElementById('priceOfNewItem');
-  let quantityOfNew = document.getElementById('quantityOfNewItem');
-  let isAdded = document.getElementById('isAdded');
-      isAdded.innerHTML = '';
-
-    formElem.onsubmit = async (e) => {
-      infoErr.innerHTML = '';
-      tbl.innerHTML = '';
-      let bodyJSON = JSON.stringify({_id:id.value, name: name.value, price: price.value, quantity: quantity.value});
-      e.preventDefault();
-      
-
-    fetch('/products', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: bodyJSON })
-      .then(response => response.json())
-      .then(result => {
-          if(!result.errors){
-            tbl.style.cssText += 'display: inline';
-            let products = JSON.parse(result);
-            console.log(result, 'result090u');
-            getTbl(tbl,products);
-          }else{
-            console.log(result.errors) 
-            result.errors.map(item => infoErr.innerHTML += `<li>${item.msg} on field ${item.param} - ${item.value}`) 
-        }
-           
-        })
-      .catch(err => {
-        console.log('err', err);
-      })
-
-  };
-
-    formAddNew.onsubmit = async (e) => {
-      let bodyJSON = JSON.stringify({name: nameOfNew.value, price: priceOfNew.value, quantity: quantityOfNew.value});
-      e.preventDefault();
-      fetch('/new-item', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: bodyJSON })
-        .then(response => response.text())
-        .then(result => {
-          console.log(result, 'newAdded');
-          isAdded.innerHTML = result 
-        })
-      .catch(err => {
-        console.log('err', err);
-      })
-      }
-
-
-
-function getTbl(elem, arr){
 
   for(let i = 0; i < arr.length ; i++){
-    let tr = createEl('tr', elem);
+    let tr = createEl('tr', tbl);
     for(let key in arr[i]){
       let td = createEl('td', tr);
         td.innerHTML = arr[i][key]

@@ -64,79 +64,14 @@ async function getFilteredData (arr, objBody){
 }
 
 
-const getFilteredInfo = async (obj, project) => {
- console.log(obj, 'obj')
-
-  let filters = {};
-
-    for(let key in obj){
-      if(obj[key] !== ''){
-        filters[key] = obj[key]
-      }
-    }
-
-  let log;
-
-}
-
 module.exports = function (app) {
-/*
-  const { MongoClient } = require("mongodb");
-  const url = "mongodb://localhost:27017/";
-  const client = new MongoClient(url, { useUnifiedTopology: true });
-  client.connect();
-  const database = client.db("dataB");
-  const collection = database.collection("products");
 
-*/
-  let allProducts, filteredStore, newItem;
-/*
-  async function run() {
-    try {
-
-      await collection.find().toArray((err, result) => {
-        if(err) console.log(err, 'err')
-        allProducts = result;
-        console.log(result, 'res')
-      })
-
-    } finally {
-  //    await client.close();
-    }
-  }
-
-*/
-
-  async function addNew() {
-    try {
-      if(newItem){
-        collection.insertOne(newItem, function(err, result){
-          if(err) return console.log(err);
-            console.log(result, 'newitem');
-        });
-      }
-    } finally {
-   //   await client.close();
-    }
-  }
-
-  app.route('/products')
-
-  /*
-    .get(function (req, res){
-      let jsonData = JSON.stringify(allProducts);
-        //console.log(allProducts, 'all')
-      console.log(jsonData, 'json')
-//      res.json(jsonData)
-  })
-  */
-  
+  app.route('/api/products')
 
     .post(function (req, res){
       console.log(req.body, 'req.body')
-      //run();
 
-     models.Products.find({})
+       models.Products.find({})
         .then(products => {
           console.log(products, 'prods');
 
@@ -146,15 +81,13 @@ module.exports = function (app) {
               res.json(JSON.stringify(filtered))
             })
             .catch(err => console.log(err, 'err'))
- 
         })
        .catch( (err) => console.log(err, 'err0') )
-  
       })
 
 
 
-  app.route('/new-item')
+  app.route('/api/new-item')
 
     .post(function (req, res){
       let {name, price, quantity} = req.body;
@@ -170,6 +103,79 @@ module.exports = function (app) {
 
   })
 
+
+  app.route('/api/new-item')
+
+    .post(function (req, res){
+      let {name, price, quantity} = req.body;
+      console.log(req.body, 'reqbodyNew')
+      
+      if(name && price && quantity){
+        models.Products.create({name, price, quantity})
+          .then(product => res.send('New item saved'))
+          .catch(err => console.log(err, 'err'))
+      }else{
+        res.send('Required field missing');
+      }
+
+  })
+
+
+  app.route('/api/books/:id')
+    .get(function (req, res){
+      let bookid = req.params.id;
+      models.Library.find({_id: bookid})
+        .then(book => {
+          console.log(book[0], 'book');
+            if(book.length > 0){
+              res.json(book[0])
+            }else{
+              res.send('no book exists')
+            }
+        })
+        .catch(err => res.send('no book exists'))
+      //json res format: {"_id": bookid, "title": book_title, "comments": [comment,comment,...]}
+    })
+    
+    .post(function(req, res){
+      console.log(req.body, 'reqBody')
+      let bookid = req.params.id;
+      let comment = req.body.comment;
+      if(comment){
+        models.Library.findOneAndUpdate({_id: bookid},  {$push: {comments: comment}, $inc : { commentcount : 1, __v: 1 } },{       returnOriginal: false } )
+          .then(foundBook => {
+            if(foundBook){
+              console.log(foundBook, 'foundbook')
+              res.json(foundBook) 
+            }else{
+              res.send('no book exists')
+            }
+          })
+          .catch(err => {
+            res.send('no book exists')
+          })
+      }else{
+        res.send('missing required field comment')
+      }
+      //json res format same as .get
+    })
+    
+    .delete(function(req, res){
+      let bookid = req.params.id;
+      models.Library.deleteOne({_id: bookid})
+        .then(doc => {
+          console.log(doc, 'doc')
+          if(doc.deletedCount === 1){
+            res.send('delete successful')
+          }else{
+            res.send('no book exists')
+          }
+        })
+        .catch(err => res.send('no book exists'))
+      
+      //if successful response will be 'delete successful'
+    });
+ 
 //update
   /*
     .put(function (req, res){
