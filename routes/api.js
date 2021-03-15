@@ -30,11 +30,13 @@ async function getFilteredData (arr, objBody){
 
   let filters = {};
 
+  if(objBody){
     for(let key in objBody){
       if(objBody[key] !== ''){
         filters[key] = objBody[key];
       }
     }
+  }
 
 
   if(isEmptyObject(filters)){
@@ -67,6 +69,19 @@ async function getFilteredData (arr, objBody){
 module.exports = function (app) {
 
   app.route('/api/products')
+
+
+    .get(function (req, res){
+      console.log(req, 'req')
+
+       models.Products.find({})
+        .then(products => {
+          res.json(products)
+        })
+       .catch( (err) => console.log(err, 'err0') )
+      })
+
+
 
     .post(function (req, res){
       console.log(req.body, 'req.body')
@@ -101,9 +116,98 @@ module.exports = function (app) {
         res.send('Required field missing');
       }
 
+    
   })
+ 
+    .delete(function(req, res){
+      let bookid = req.params.id;
+      models.Products.deleteOne({_id: bookid})
+        .then(doc => {
+          console.log(doc, 'doc')
+          if(doc.deletedCount === 1){
+            res.send('delete successful')
+          }else{
+            res.send('no book exists')
+          }
+        })
+        .catch(err => res.send('no book exists'))
+      //if successful response will be 'delete successful'
+    });
+
+ app.route('/api/products/:id')
+
+    .get(function (req, res){
+      console.log(req, 'req')
+
+       let productId = req.params.id;
+        console.log(req.params, 'prodId')
+
+        models.Products.find({_id: productId})
+        .then(product => {
+              res.json(product)
+        })
+        .catch(err => console.log(err))
+ 
+      })
 
 
+    
+    .delete(function(req, res){
+      let productId = req.params.id;
+      console.log(productId, 'deleteId')
+      models.Products.deleteOne({_id: productId})
+        .then(doc => {
+          console.log(doc, 'doc')
+          if(doc.deletedCount === 1){
+            res.send('delete successful')
+          }else{
+            res.send('no product exists')
+          }
+        })
+        .catch(err => res.send('no book exists'))
+      
+      //if successful response will be 'delete successful'
+    })
+
+
+   .put(function (req, res){
+      let productId = req.params.id;
+      console.log(req.body, 'reqBodyPut');
+
+
+      if(productId){
+        let newData = {};
+            for(let key in req.body){
+              if(req.body[key] != ''  && key != '_id'){
+                newData[key] = req.body[key]
+              }
+            }
+
+    if(!isEmptyObject(newData)){
+    let answ;
+    // console.log(newData, 'newData')
+        models.Products.findOneAndUpdate({_id: productId}, {$set: newData})
+           .then(product => {
+              if(product){
+                answ = {  result: 'successfully updated', '_id': productId };
+              }else{
+                answ = {  error: 'could not update', '_id': productId };
+              }
+                console.log(product, 'updatedProduct')
+              res.json(answ)
+
+            }).catch(err => {
+              console.log(err, 'myErr');
+
+            });
+      }else{
+           res.json({error: 'no update field(s) sent', '_id': productId });
+      }
+   }else{
+     res.json({error: 'missing _id' });
+   }
+    })
+    
   app.route('/api/new-item')
 
     .post(function (req, res){

@@ -39,8 +39,42 @@
   <h1>Personal Library</h1>
 </header>
 <br>
+<div>
+  <button id='showAll'>Show all items</button>
+</div>
+<div>
+  <form action="" id='findById' class="border">
+    <label for="id">Find by ID</label>
+    <input type="text" id="byId" name="_id" value=""><br>
+    <input type="submit" value="Submit">
+  </form>
+</div>
+
+<div>
+  <form action="" method='delete' id='deleteById' class="border">
+    <label for="deleteId">Delete by ID</label>
+    <input type="text" id="deleteId" name="_id" value=""><br>
+    <input type="submit" value="Submit">
+  </form>
+  <p id='infoDeleted'></p>
+</div>
+<div>
+  <form action="" id='updateById' class="border">
+    <label for="updateId">ID</label>
+    <input type="text" id="updateId" name="_id" value=""><br>
+    <label for="nameUpd">name</label>
+    <input type="text" id="nameUpd" name="name" value=""><br>
+    <label for="priceUpd">price</label>
+    <input type="text" id="priceUpd" name="price" value=""><br>
+    <label for="quantityUpd">quantity</label>
+    <input type="text" id="quantityUpd" name="quantity" value=""><br>
+    <input type="submit" value="Submit">
+  </form>
+  <p id='infoUpdated'></p>
+</div>
 <div id ='sampleposting'>
   <h2 style="text-align: left">Filters</h2>
+
 
   <form action="" method="post" id='form' class="border">
     <h4>Name</h4>
@@ -92,40 +126,102 @@
   'use strict'
   
   let infoErr = document.getElementById('info');
+        
 
-        $(function() {
-              $('#isAdded').text('');
-        $('#form').submit(function(e) {
-          $('#table').text('');
+  $(function() {
+ 
+    $('#findById').submit(function(e) {
+      let  id = $('#byId').val();
+      console.log(id, 'id')
+
+    $.ajax({
+      url: '/api/products/'+id,
+      type: 'get',
+      success: function(data) {
+        $('#table').attr('style', "display: inline");
+        console.log(data, 'result090u');
+        getTbl(data);
+
+      }
+    });
+    e.preventDefault();
+  });
+ 
+    $('#deleteById').submit(function(e) {
+      let id = $('#deleteId').val();
+      console.log(id, 'id')
+
+    $.ajax({
+      url: '/api/products/'+id,
+      type: 'delete',
+      success: function(data) {
+        $('#table').attr('style', "display: inline");
+        console.log(data, 'resultDeleted');
+        $('#infoDeleted').text(data);
+      }
+    });
+    e.preventDefault();
+  });
+
+    $('#updateById').submit(function(e) {
+      let id = $('#updateId').val();
+      console.log(id, 'id')
           $.ajax({
-            url: '/api/products',
-            type: 'post',
-            data: $('#form').serialize(),
+            url: '/api/products/'+id,
+            type: 'put',
+            data: $('#updateById').serialize(),
             success: function(data) {
-              $('#jsonResult').text(JSON.stringify(data));
-              $('#table').attr('style', "display: inline");
-              let products = JSON.parse(data);
-              console.log(data, 'result090u');
-              getTbl(products);
+              $('#infoUpdated').text(JSON.stringify(data));
             }
           });
           e.preventDefault();
-        });
+  });
+ 
+    $('#showAll').click(function(e) {
+    $.ajax({
+      url: '/api/products',
+      type: 'get',
+      success: function(data) {
+        $('#table').attr('style', "display: inline");
+        console.log(data, 'result090u');
+          getTbl(data);
+      }
+    });
+    e.preventDefault();
+  });
 
-      $('#formAddNew').submit(function(e) {
-          $.ajax({
-            url: '/api/new-item',
-            type: 'post',
-            data: $('#formAddNew').serialize(),
-            success: function(data) {
-              $('#isAdded').text(data);
-            }
-          });
-          e.preventDefault();
-        });
+        $('#isAdded').text('');
+  $('#form').submit(function(e) {
+    $('#table').text('');
+    $.ajax({
+      url: '/api/products',
+      type: 'post',
+      data: $('#form').serialize(),
+      success: function(data) {
+        $('#jsonResult').text(JSON.stringify(data));
+        $('#table').attr('style', "display: inline");
+        let products = JSON.parse(data);
+        console.log(data, 'result090u');
+        getTbl(products);
+      }
+    });
+    e.preventDefault();
+  });
+
+  $('#formAddNew').submit(function(e) {
+      $.ajax({
+        url: '/api/new-item',
+        type: 'post',
+        data: $('#formAddNew').serialize(),
+        success: function(data) {
+          $('#isAdded').text(data);
+        }
+      });
+      e.preventDefault();
+    });
 
 
-        });
+    });
 
 
 function getTbl( arr){
