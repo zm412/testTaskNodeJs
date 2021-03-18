@@ -30,6 +30,7 @@
     <input type='submit'>
   </form>
 
+  <div id = 'quantityInfo'></div>
   <hr style='margin: 50px'>
 <div>
   <button id='showAll'>Show all items</button>
@@ -38,17 +39,15 @@
 
 </div>
 
-<div id='list'>
-  <table id='table'><tr><th>id</th><th>Name</th><th>Price</th><th>Quantity</th><th>Update</><Delete><th>UploadPic</th></table>
-</div>
-  <div id='listOfLinks'></div>
-
-
   <div id ='formFor' style="display: none"> </div>
   <div id ='uploadPic' style="display: none"></div>
   <div id ='showPic' style="display: none" class='border'></div>
+  <div id='info'></div>
 
-<div id='info'></div>
+  <div id='listOfLinks'></div>
+  <div id='list'> </div>
+
+
 
 
 
@@ -59,7 +58,7 @@
 <script>
   'use strict'
    
-  let tbl = document.getElementById('table');
+  let tbl = document.getElementById('list');
   let listOfLinks = document.getElementById('listOfLinks');
   
 
@@ -67,7 +66,7 @@
     
 
   $('#filterForm').submit(function(e) {
-    $('#table').text('');
+    $('#list').empty();
     $('#formFor').attr('style', "display: none");
 
     $.ajax({
@@ -75,7 +74,7 @@
       type: 'post',
       data: $('#filterForm').serialize(),
       success: function(data) {
-        $('#table').attr('style', "display: inline");
+        $('#quantityInfo').text('Total: '+ data.count)
         getTbl(tbl, data.products, data.count,data.page, data.limit);
       }
     });
@@ -85,15 +84,15 @@
 
      $('#showAll').click(function(e) {
 
+        $('#list').empty();
       $('#formFor').attr('style', "display: none");
-      removeTbl(tbl);
       $('#info').text('');
 
       $.ajax({
         url: '/api/products',
         type: 'get',
         success: function(data) {
-          $('#table').attr('style', "display: inline");
+            $('#quantityInfo').text('Total: '+ data.count)
             getTbl(tbl, data.products, data.count, 1,data.count );
         }
       });
@@ -161,9 +160,10 @@ function addOrUpdate(idForm, apiWay, id=''){
 
 
 async function funcDelete(e){
-  let par = e.closest('tr');
+  let par = e.closest('div');
   let id = par.id;
   let idOfElem = par.firstElementChild.innerHTML;
+  console.log(idOfElem, 'idElem')
   $('#info').text('');
 
 
@@ -194,7 +194,7 @@ async function funcUploadPic(e){
   } 
 
 async function funcUpdate(e){
-  let par = e.closest('tr');
+  let par = e.closest('div');
   let id = par.firstElementChild;
   let name = id.nextElementSibling;
   let price = name.nextElementSibling;
@@ -214,7 +214,7 @@ function removeTbl(elemTbl){
     }
   }
 }
-
+/*
 async function getTbl(elem, arr, countNum,page, limit){
    removeTbl(elem);
 
@@ -242,6 +242,32 @@ async function getTbl(elem, arr, countNum,page, limit){
 
   elem.insertAdjacentHTML('beforeend', resultTbl);
   linkGenerator(listOfLinks, countNum,page, limit)
+}
+
+*/
+
+async function getTbl(elem, arr, countNum,page, limit){
+
+  linkGenerator(listOfLinks, countNum,page, limit)
+
+  $('#list').empty();
+  let str = arr.reduce(( item,current, index  ) => {
+    let img = current.image? '../' + current.image.path : '../uploads/noPic.jpg';
+    let itemId = 'itemId' + String(index);
+    return item + `
+      <div id=${itemId} class='itemBox border' background=${img}">
+        <h6>${current._id}</h6>
+        <h6>${current.name}</h6>
+        <h6>${current.price}</h6>
+        <h6>${current.quantity}</h6>
+        <button onclick="funcUpdate(this)">Update</button>
+        <button onclick="funcDelete(this)">Delete</button>
+        <button onclick="funcUploadPic(this)">UploadPic</button>
+      </div> 
+      `  }, '')
+
+
+  elem.insertAdjacentHTML('beforeend', str);
 }
 
 function showPic(e){
@@ -275,12 +301,14 @@ function linkGenerator(elemIn,countNotes,page, limit){
     $('button.pages').click(async function(e) {
       await $('#page').val(e.target.dataset.page)
 
+
         $.ajax({
           url: '/api/products',
           type: 'post',
           data: $('#filterForm').serialize(),
           success: function(data) {
           $('#table').attr('style', "display: inline");
+          $('#quantityInfo').text('Total: '+ data.count)
           getTbl(tbl, data.products, data.count,data.page, data.limit);
         }
       });

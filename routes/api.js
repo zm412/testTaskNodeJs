@@ -10,8 +10,10 @@ function isEmptyObject(obj) {
 }
 
   const getLogs = async (arr, objBody) => {
+    console.log(arr.length, 'arr.length')
+    console.log(objBody, 'objBody')
 
-    let  log = arr;
+    let  log = arr.slice();
 
    if(!objBody.id && !objBody.name && !objBody.price && !objBody.quantity) return arr ;
 
@@ -30,7 +32,7 @@ function isEmptyObject(obj) {
     if(objBody.quantity == 'on'){
       log = await log.filter( prod => prod.quantity > 0 );
       
-      console.log(log, 'logQuantity')
+      console.log(log.length, 'logQuantity')
     }
 
     return log;
@@ -71,8 +73,6 @@ module.exports = function (app) {
 
             .then(result => {
               let cutBit = cutArr(result, req.body.page || 1, req.body.limit || 5);
-              console.log(result, 'prods')
-              console.log(result[0].image.path, 'prods')
               res.json({ products:cutBit, count: result.length, page: req.body.page || 1, limit:req.body.limit || 5});
             })
             .catch(err => console.log(err, 'err'));
@@ -84,8 +84,6 @@ module.exports = function (app) {
   app.route('/api/upload/:id')
 
     .post(function (req, res){
-
-      console.log(req.params.id, 'id')
 
       let productId = req.params.id;
       let filedata = req.file;
@@ -143,7 +141,6 @@ module.exports = function (app) {
 
         models.Products.find({_id: productId})
         .then(product => {
-          console.log(product, 'prod')
           res.json(product); 
         })
           .catch(err => console.log(err))
