@@ -46,6 +46,7 @@
 
   <div id ='formFor' style="display: none"> </div>
   <div id ='uploadPic' style="display: none"></div>
+  <div id ='showPic' style="display: none" class='border'></div>
 
 <div id='info'></div>
 
@@ -115,10 +116,8 @@
 
 
 function uploadFile(){
-  
   let inElem = document.getElementById('divUploadForm');
   inElem.innerHTML = '';
- 
 }
  
 async function newFormAddOrUpdate(idForm,apiWay, h1Text, objValue){
@@ -192,28 +191,7 @@ async function funcUploadPic(e){
     </form>
 `)
   $('#uploadPic').attr('style', "display: inline");
-     /* 
- 
-  $('#formUpload').submit(function(e) {
-    $('#table').text('');
-    $('#uploadPic').attr('style', "display: none");
-
-    $.ajax({
-      url: '/api/uploadFile',
-      type: 'post',
-      data: $('#formUpload').serialize(),
-      success: function(data) {
-        $('#info').text(data);
-      }
-    });
-
-    e.preventDefault();
- });
-
-  */
-   
-
-} 
+  } 
 
 async function funcUpdate(e){
   let par = e.closest('tr');
@@ -240,9 +218,13 @@ function removeTbl(elemTbl){
 async function getTbl(elem, arr, countNum,page, limit){
    removeTbl(elem);
 
-  let theFirstRow = "<tr><th>id</th><th>Name</th><th>Price</th><th>Quantity</th><th>Update</th><th><Delete></th><th>Upload Pic</th>" 
+  let theFirstRow = "<tr><th>id</th><th>Name</th><th>Price</th><th>Quantity</th><th>Update</th><th>Delete</th><th>Upload Pic</th><th>ShowPic</th></tr>" 
 
   let str = arr.reduce(( item,current, index  ) => {
+    let img = current.image? '../' + current.image.path : null;
+    let isPic = current.image ? 'thereIsPic' : 'thereIsNoPic';
+    let imgHref = current.image ? img : '';
+    console.log(imgHref, 'imgHref')
     let itemId = 'itemId' + String(index);
     return item + `<tr id='${itemId}'>
       <td>${current._id}</td>
@@ -252,6 +234,7 @@ async function getTbl(elem, arr, countNum,page, limit){
       <td><button onclick="funcUpdate(this)">Update</button></td>
       <td><button onclick="funcDelete(this)">Delete</button></td>
       <td><button onclick="funcUploadPic(this)">UploadPic</button></td>
+      <td><button onclick="showPic(this)" data-src=${imgHref}>${isPic}</button></td>
       </tr>
       `  }, '')
 
@@ -260,6 +243,16 @@ async function getTbl(elem, arr, countNum,page, limit){
   elem.insertAdjacentHTML('beforeend', resultTbl);
   linkGenerator(listOfLinks, countNum,page, limit)
 }
+
+function showPic(e){
+  $('#showPic').empty();
+  let showPicElem = document.getElementById('showPic') ;
+  console.log(e.dataset.src, 'this')
+  showPicElem.insertAdjacentHTML('afterbegin', `
+      <img src= ${e.dataset.src}>
+  `)
+}
+
 
 function createEl(tag, par ){
 	let el = document.createElement(tag);

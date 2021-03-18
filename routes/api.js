@@ -71,6 +71,8 @@ module.exports = function (app) {
 
             .then(result => {
               let cutBit = cutArr(result, req.body.page || 1, req.body.limit || 5);
+              console.log(result, 'prods')
+              console.log(result[0].image.path, 'prods')
               res.json({ products:cutBit, count: result.length, page: req.body.page || 1, limit:req.body.limit || 5});
             })
             .catch(err => console.log(err, 'err'));
