@@ -4,6 +4,11 @@
 /out-tsc
 # VIM
 *.swp
+*.swm
+*.swl
+*.swn
+*.swo
+
 *package-lock.json
 
 # Runtime data

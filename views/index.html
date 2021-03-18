@@ -7,116 +7,47 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="/public/style.css">
   <style>
-  .field{
-    width:180px;
-  }
-
-
-  table{
-  display: none;
-  width: 100%;
-  border-collapse: collapse;
-  top: 40px;
-  left: 40px;
-  }
-  td, th{
-  text-align: center;
-  border: 1px solid black;
-  padding: 10px;
-  }
-
-  form{
-    padding: 20px;
-  }
-
-  code {
-  background-color: whitesmoke;
-      }
+    code {
+      background-color: whitesmoke;
+    }
   </style>
 </head>
 <body>
-<header>
-  <h1>Personal Library</h1>
-</header>
 <br>
-<div>
-  <button id='showAll'>Show all items</button>
-</div>
-<div>
-  <form action="" id='findById' class="border">
-    <label for="id">Find by ID</label>
-    <input type="text" id="byId" name="_id" value=""><br>
-    <input type="submit" value="Submit">
-  </form>
-</div>
-
-<div>
-  <form action="" method='delete' id='deleteById' class="border">
-    <label for="deleteId">Delete by ID</label>
-    <input type="text" id="deleteId" name="_id" value=""><br>
-    <input type="submit" value="Submit">
-  </form>
-  <p id='infoDeleted'></p>
-</div>
-<div>
-  <form action="" id='updateById' class="border">
-    <label for="updateId">ID</label>
-    <input type="text" id="updateId" name="_id" value=""><br>
-    <label for="nameUpd">name</label>
-    <input type="text" id="nameUpd" name="name" value=""><br>
-    <label for="priceUpd">price</label>
-    <input type="text" id="priceUpd" name="price" value=""><br>
-    <label for="quantityUpd">quantity</label>
-    <input type="text" id="quantityUpd" name="quantity" value=""><br>
-    <input type="submit" value="Submit">
-  </form>
-  <p id='infoUpdated'></p>
-</div>
 <div id ='sampleposting'>
   <h2 style="text-align: left">Filters</h2>
 
+  <form action='' id='filterForm'>
 
-  <form action="" method="post" id='form' class="border">
-    <h4>Name</h4>
-    
-    <label for="id">Id</label>
-    <input type="text" id="idOfItem" name="_id" value=""><br>
+    <input id='byName' placeholder='searchByName' name='name'><br>
+    <input id='byPrice' placeholder='searchByPrice' name='price'><br>
+    <input id='byQuantity' placeholder='searchByQuantity' name='quantity'><br>
+    <input id='page' placeholder='page' name='page' value='1'><br>
+    <input id='limit' placeholder='limit' name='limit' value='5'><br>
 
-    <label for="nameOfItem" >Name</label>
-    <input type="text" id="nameOfItem" name="name" value=""><br>
-
-    <label for="filterTo">FilterToPrice</label>
-    <input type="text" name="price" value="" id="filterTo"><br>
-
-    <label for="quantity">Abialable items</label>
-    <input type="text" name="quantity" value="" id="quantity"><br>
-
-    <input type="submit" value="Submit">
+    <input type='submit'>
   </form>
+
+  <hr style='margin: 50px'>
+<div>
+  <button id='showAll'>Show all items</button>
+  <button id='addNewButt' onclick="funcAdd()">Add new item</button>
+
+
 </div>
 
-<div id ='addNew'>
-  <h2 style="text-align: left">Filters</h2>
-
-  <form action="" method="post" id='formAddNew' class="border">
-    <h4>Add new item</h4>
-
-   <label for="nameOfNewItem" >Name of new item</label>
-    <input type="text" id="nameOfNewItem" name="name" value=""><br>
-
-    <label for="priceOfNewItem">Price of new item</label>
-    <input type="text" name="price" value="" id="priceOfNewItem"><br>
-
-    <label for="quantityOfNewItem">Quantity of new item</label>
-    <input type="text" name="quantity" value="" id="quantityOfNewItem"><br>
-
-    <input type="submit" value="Submit">
-  </form>
-  <p id='isAdded'></p>
+<div id='list'>
+  <table id='table'><tr><th>id</th><th>Name</th><th>Price</th><th>Quantity</th><th>Update</><Delete></table>
 </div>
-<hr style='margin: 50px'>
-<div id='list'> <table id='table' style="display: none"><tr><th>id</th><th>Name</th><th>Price</th><th>Quantity</th></table> </div>
-<div id='info'> </div>
+  <div id='listOfLinks'></div>
+
+
+  <div id ='formFor' style="display: none">
+
+</div>
+<div id='info'></div>
+
+
 
 <script src="https://code.jquery.com/jquery-2.2.1.min.js"
         integrity="sha256-gvQgAFzTH6trSrAWoH1iPo9Xc96QxSZ3feW6kem+O00="
@@ -124,123 +55,199 @@
 <script src="/public/client.js"></script>
 <script>
   'use strict'
-  
-  let infoErr = document.getElementById('info');
-        
+   
+  let tbl = document.getElementById('table');
+  let listOfLinks = document.getElementById('listOfLinks');
+  //let page = document.getElementById('page').value;
 
   $(function() {
- 
-    $('#findById').submit(function(e) {
-      let  id = $('#byId').val();
-      console.log(id, 'id')
-
-    $.ajax({
-      url: '/api/products/'+id,
-      type: 'get',
-      success: function(data) {
-        $('#table').attr('style', "display: inline");
-        console.log(data, 'result090u');
-        getTbl(data);
-
-      }
-    });
-    e.preventDefault();
-  });
- 
-    $('#deleteById').submit(function(e) {
-      let id = $('#deleteId').val();
-      console.log(id, 'id')
-
-    $.ajax({
-      url: '/api/products/'+id,
-      type: 'delete',
-      success: function(data) {
-        $('#table').attr('style', "display: inline");
-        console.log(data, 'resultDeleted');
-        $('#infoDeleted').text(data);
-      }
-    });
-    e.preventDefault();
-  });
-
-    $('#updateById').submit(function(e) {
-      let id = $('#updateId').val();
-      console.log(id, 'id')
-          $.ajax({
-            url: '/api/products/'+id,
-            type: 'put',
-            data: $('#updateById').serialize(),
-            success: function(data) {
-              $('#infoUpdated').text(JSON.stringify(data));
-            }
-          });
-          e.preventDefault();
-  });
- 
-    $('#showAll').click(function(e) {
-    $.ajax({
-      url: '/api/products',
-      type: 'get',
-      success: function(data) {
-        $('#table').attr('style', "display: inline");
-        console.log(data, 'result090u');
-          getTbl(data);
-      }
-    });
-    e.preventDefault();
-  });
-
-        $('#isAdded').text('');
-  $('#form').submit(function(e) {
+    
+  $('#filterForm').submit(function(e) {
     $('#table').text('');
+
     $.ajax({
       url: '/api/products',
       type: 'post',
-      data: $('#form').serialize(),
+      data: $('#filterForm').serialize(),
       success: function(data) {
-        $('#jsonResult').text(JSON.stringify(data));
         $('#table').attr('style', "display: inline");
-        let products = JSON.parse(data);
-        console.log(data, 'result090u');
-        getTbl(products);
+        console.log(data, 'filter')
+        //console.log(products, 'products')
+        getTbl(tbl, data.products, data.totalPages);
+
+    console.log($('.active').text(), 'pageNum')
       }
     });
     e.preventDefault();
+ });
+
+    $('#showAll').click(function(e) {
+        getAll();
+        e.preventDefault();
   });
 
-  $('#formAddNew').submit(function(e) {
-      $.ajax({
-        url: '/api/new-item',
-        type: 'post',
-        data: $('#formAddNew').serialize(),
-        success: function(data) {
-          $('#isAdded').text(data);
-        }
-      });
-      e.preventDefault();
-    });
+    $('#addNewButt').click(function() {
+
+        newFormAddOrUpdate('formAddNew',`/api/new-item`, 'Add new item',{});
+        $('#formFor').attr('style', "display: inline");
+        getAll();
+  });
+
 
 
     });
 
 
-function getTbl( arr){
+async function newFormAddOrUpdate(idForm,apiWay, h1Text, objValue){
 
-  let tbl = document.getElementById('table');
+  let inElem = document.getElementById('formFor');
+  inElem.innerHTML = '';
+  let id = objValue.id || '';
+ 
+  await inElem.insertAdjacentHTML('afterbegin', `
+    <h1>${h1Text}</h1>
+    <form  method="post"  id=${idForm} class="border">
 
-  for(let i = 0; i < arr.length ; i++){
-    let tr = createEl('tr', tbl);
-    for(let key in arr[i]){
-      let td = createEl('td', tr);
-        td.innerHTML = arr[i][key]
+    <input type="text" name="name" value=${objValue.name || ""} ><br>
+
+    <input type="text" name="price" value=${objValue.price || ''} ><br>
+
+    <input type="text" name="quantity" value=${objValue.quantity || ''}><br>
+
+    <input type="submit" value="Submit">
+  </form>
+`
+);
+
+  await  $(`#${idForm}`).submit(function(e){
+    e.preventDefault();
+    addOrUpdate(idForm, apiWay, id);
+  });
+
+}
+
+function addOrUpdate(idForm, apiWay, id=''){
+  $('#info').text('');
+  console.log($(`#${idForm}`).serialize, 'serialize')
+  $.ajax({
+    url: apiWay,
+    type: 'post',
+    data: $(`#${idForm}`).serialize(),
+    success: function(data) {
+      $('#info').text(data);
+    }
+  });
+     $('#formFor').attr('style', "display: none");
+
+}
+
+function getAll(){
+
+  removeTbl(tbl);
+  $('#info').text('');
+
+  $.ajax({
+    url: '/api/products',
+    type: 'get',
+    success: function(data) {
+      $('#table').attr('style', "display: inline");
+      console.log(data, 'data')
+        getTbl(tbl, data.products, data.totalPages);
+    }
+  });
+
+}
+
+async function funcDelete(e){
+  let par = e.closest('tr');
+  let id = par.id;
+  let idOfElem = par.firstElementChild.innerHTML;
+  $('#info').text('');
+
+  console.log(idOfElem, 'id')
+
+    await $.ajax({
+      url: '/api/filter/'+idOfElem,
+      type: 'delete',
+      success: function(data) {
+        console.log(data, 'resultDeleted');
+        $('#info').text(data);
+      }
+    });
+
+  getAll();
+  
+  console.log(this, 'this');
+  console.log(e, 'target');
+
+}
+
+async function funcUpdate(e){
+  let par = e.closest('tr');
+  let id = par.firstElementChild;
+  let name = id.nextElementSibling;
+  let price = name.nextElementSibling;
+  let quantity = price.nextElementSibling;
+  let apiWay = '/api/filter/'+id.innerHTML;
+
+
+  let objValue = {id: id.innerHTML, name: name.innerHTML, price: price.innerHTML, quantity: quantity.innerHTML }
+  newFormAddOrUpdate('formUpdate', apiWay, 'Update data', objValue )  
+
+  await $('#formFor').attr('style', "display: inline");
+  //await getAll();
+} 
+
+function removeTbl(elemTbl){
+  for(let i = 0; i < elemTbl.rows.length; i++){
+    while(elemTbl.rows.length > 0){
+      elemTbl.deleteRow(i);
     }
   }
 }
+
+async function getTbl(elem, arr, countNum){
+  console.log(arr, 'arrrrr')
+   removeTbl(elem);
+
+
+  let str = arr.reduce(( item,current, index  ) => {
+   // console.log(item, 'item')
+    let itemId = 'itemId' + String(index);
+    return item + `<tr id='${itemId}'>
+      <td>${current._id}</td>
+      <td>${current.name}</td>
+      <td>${current.price}</td>
+      <td>${current.quantity}</td>
+      <td><button onclick="funcUpdate(this)">Update</button></td>
+      <td><button onclick="funcDelete(this)">Delete</button></td>
+      </tr>
+      `  }, '')
+
+  //console.log(str, 'str')
+
+  elem.insertAdjacentHTML('beforeend', str);
+  linkGenerator(listOfLinks, countNum, 2, 5)
+  
+}
+
 
 function createEl(tag, par ){
 	let el = document.createElement(tag);
 		par.appendChild(el);
 		return el;
+}
+
+
+function linkGenerator(elemIn,countNotes, page, limit){
+  let pagesCount = Math.floor(countNotes / limit) ;
+    let classVal, elemStr = '';
+  for(let i = 1; i <= pagesCount; i++){
+    classVal = page == i ? 'class="active pages"' : 'pages';
+    elemStr += `<button data-page="${i}" ${classVal}>${i}</button>` ;
+  }
+//console.log(elemStr, 'elemStr')
+  elemIn.insertAdjacentHTML('afterbegin', elemStr)
 }
 
 </script>

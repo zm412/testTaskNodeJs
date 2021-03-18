@@ -50,6 +50,13 @@ app.route('/')
     res.sendFile(process.cwd() + '/views/index.html');
     
   });
+/*
+app.route('/api/products')
+  .get(function (req, res) {
+    res.sendFile(process.cwd() + '/views/products.html');
+    
+  });
+*/
 
 //For FCC testing purposes
 fccTestingRoutes(app);
