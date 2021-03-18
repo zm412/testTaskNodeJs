@@ -79,6 +79,32 @@ module.exports = function (app) {
       })
 
 
+  app.route('/api/upload/:id')
+
+    .post(function (req, res){
+
+      console.log(req.params.id, 'id')
+
+      let productId = req.params.id;
+      let filedata = req.file;
+
+    if(productId && filedata){
+      models.Products.findOneAndUpdate({_id: productId}, {image: filedata})
+         .then(product => {
+            if(product){
+                res.send("Файл загружен");
+            }else{
+                res.send('could not upload imige with ID ' +  productId);
+            }
+
+          }).catch(err =>  console.log(err, 'myErr'));
+    }else{
+      res.send("Ошибка при загрузке файла");
+    }
+  })
+   
+
+
   app.route('/api/new-item')
 
     .post(function (req, res){
@@ -114,7 +140,10 @@ module.exports = function (app) {
        let productId = req.params.id;
 
         models.Products.find({_id: productId})
-          .then(product => res.json(product) )
+        .then(product => {
+          console.log(product, 'prod')
+          res.json(product); 
+        })
           .catch(err => console.log(err))
       })
 

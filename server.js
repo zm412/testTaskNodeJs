@@ -12,6 +12,8 @@ const runner            = require('./test-runner');
 const models = require('./models');
 
 const url = "mongodb://localhost:27017/";
+const multer  = require("multer");
+
 
 /*
 const MongoClient = require("mongodb").MongoClient;
@@ -43,6 +45,7 @@ app.use(cors({origin: '*'})); //USED FOR FCC TESTING PURPOSES ONLY!
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(multer({dest:"uploads"}).single("filedata"));
 
 //Index page (static HTML)
 app.route('/')

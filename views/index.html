@@ -39,14 +39,14 @@
 </div>
 
 <div id='list'>
-  <table id='table'><tr><th>id</th><th>Name</th><th>Price</th><th>Quantity</th><th>Update</><Delete></table>
+  <table id='table'><tr><th>id</th><th>Name</th><th>Price</th><th>Quantity</th><th>Update</><Delete><th>UploadPic</th></table>
 </div>
   <div id='listOfLinks'></div>
 
 
-  <div id ='formFor' style="display: none">
+  <div id ='formFor' style="display: none"> </div>
+  <div id ='uploadPic' style="display: none"></div>
 
-</div>
 <div id='info'></div>
 
 
@@ -105,8 +105,21 @@
         $('#formFor').attr('style', "display: inline");
         //getAll();
   });
+
+
+    $('#formUploadFile').click(function() {
+        newFormAddOrUpdate('formAddNew',`/api/new-item`, 'Add new item',{});
+  });
+
  });
 
+
+function uploadFile(){
+  
+  let inElem = document.getElementById('divUploadForm');
+  inElem.innerHTML = '';
+ 
+}
  
 async function newFormAddOrUpdate(idForm,apiWay, h1Text, objValue){
 
@@ -123,9 +136,8 @@ async function newFormAddOrUpdate(idForm,apiWay, h1Text, objValue){
     <input type="text" name="price" value=${objValue.price || ''} ><br>
 
     <input type="text" name="quantity" value=${objValue.quantity || ''}><br>
-
-    <input type="submit" value="Submit">
-  </form>
+       <input type="submit" value="Submit">
+        </form>
 `
 );
 
@@ -165,6 +177,44 @@ async function funcDelete(e){
     });
 }
 
+async function funcUploadPic(e){
+  let par = e.closest('tr');
+  let id = par.firstElementChild.innerHTML;
+  let url ="/api/upload/" + id; 
+
+  let uploadPic = document.getElementById('uploadPic');
+  uploadPic.insertAdjacentHTML('afterbegin', `
+
+    <form id='formUpload' action=${url} method="post" enctype="multipart/form-data" class='border'>
+      <input type="file" name="filedata" />
+    <input  id=${id} value=${id} />
+      <input type="submit" value="Send" />
+    </form>
+`)
+  $('#uploadPic').attr('style', "display: inline");
+     /* 
+ 
+  $('#formUpload').submit(function(e) {
+    $('#table').text('');
+    $('#uploadPic').attr('style', "display: none");
+
+    $.ajax({
+      url: '/api/uploadFile',
+      type: 'post',
+      data: $('#formUpload').serialize(),
+      success: function(data) {
+        $('#info').text(data);
+      }
+    });
+
+    e.preventDefault();
+ });
+
+  */
+   
+
+} 
+
 async function funcUpdate(e){
   let par = e.closest('tr');
   let id = par.firstElementChild;
@@ -190,7 +240,7 @@ function removeTbl(elemTbl){
 async function getTbl(elem, arr, countNum,page, limit){
    removeTbl(elem);
 
-  let theFirstRow = "<tr><th>id</th><th>Name</th><th>Price</th><th>Quantity</th><th>Update</><Delete>" 
+  let theFirstRow = "<tr><th>id</th><th>Name</th><th>Price</th><th>Quantity</th><th>Update</th><th><Delete></th><th>Upload Pic</th>" 
 
   let str = arr.reduce(( item,current, index  ) => {
     let itemId = 'itemId' + String(index);
@@ -201,6 +251,7 @@ async function getTbl(elem, arr, countNum,page, limit){
       <td>${current.quantity}</td>
       <td><button onclick="funcUpdate(this)">Update</button></td>
       <td><button onclick="funcDelete(this)">Delete</button></td>
+      <td><button onclick="funcUploadPic(this)">UploadPic</button></td>
       </tr>
       `  }, '')
 

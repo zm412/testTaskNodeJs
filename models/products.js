@@ -14,7 +14,11 @@ const schemaLib = new Schema({
   quantity:{
     type: Number,
     require: true
+   } ,
+
+  image:{
    } 
+
    
 
 }, ); 
