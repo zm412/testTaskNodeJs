@@ -19,9 +19,11 @@
 
   <form action='' id='filterForm'>
 
+    <input id='byId' placeholder='searchById' name='id'><br>
     <input id='byName' placeholder='searchByName' name='name'><br>
-    <input id='byPrice' placeholder='searchByPrice' name='price'><br>
-    <input id='byQuantity' placeholder='searchByQuantity' name='quantity'><br>
+    <input id='byPrice' placeholder='max price' name='price'><br>
+    <label for='byQuantity'>Quantity gte 0</label>
+    <input id='byQuantity' type='checkbox' placeholder='searchByQuantity' name='quantity'><br>
     <input id='page' placeholder='page' name='page' value='1'><br>
     <input id='limit' placeholder='limit' name='limit' value='5'><br>
 
@@ -31,7 +33,7 @@
   <hr style='margin: 50px'>
 <div>
   <button id='showAll'>Show all items</button>
-  <button id='addNewButt' onclick="funcAdd()">Add new item</button>
+  <button id='addNewButt'>Add new item</button>
 
 
 </div>
@@ -58,14 +60,14 @@
    
   let tbl = document.getElementById('table');
   let listOfLinks = document.getElementById('listOfLinks');
-  filterForm();
   
 
   $(function() {
     
-                  /*
+
   $('#filterForm').submit(function(e) {
     $('#table').text('');
+    $('#formFor').attr('style', "display: none");
 
     $.ajax({
       url: '/api/products',
@@ -73,68 +75,39 @@
       data: $('#filterForm').serialize(),
       success: function(data) {
         $('#table').attr('style', "display: inline");
-        console.log(data, 'filter')
-        //console.log(products, 'products')
         getTbl(tbl, data.products, data.count,data.page, data.limit);
-
-                $('button.pages').click(function(e) {
-                  console.log(e.target.dataset.page, 'pages')
-                  $('#page').val(e.target.dataset.page)
-                  
-
-                  $.ajax({
-                    url: '/api/products',
-                    type: 'post',
-                    data: $('#filterform').serialize(),
-                    success: function(data) {
-                      $('#table').attr('style', "display: inline");
-                      getTbl(tbl, data.products, data.count,data.page, data.limit);
-                      }
-                    });
-            });
-
       }
     });
     e.preventDefault();
  });
-*/
 
-    $('#showAll').click(function(e) {
-        getAll();
+
+     $('#showAll').click(function(e) {
+
+      $('#formFor').attr('style', "display: none");
+      removeTbl(tbl);
+      $('#info').text('');
+
+      $.ajax({
+        url: '/api/products',
+        type: 'get',
+        success: function(data) {
+          $('#table').attr('style', "display: inline");
+            getTbl(tbl, data.products, data.count, 1,data.count );
+        }
+      });
+
         e.preventDefault();
   });
 
     $('#addNewButt').click(function() {
-
         newFormAddOrUpdate('formAddNew',`/api/new-item`, 'Add new item',{});
         $('#formFor').attr('style', "display: inline");
-        getAll();
+        //getAll();
   });
-
-
-
-    });
-
-function filterForm(){
-  
-  $('#filterForm').submit(function(e) {
-    $('#table').text('');
-
-    $.ajax({
-      url: '/api/products',
-      type: 'post',
-      data: $('#filterForm').serialize(),
-      success: function(data) {
-        $('#table').attr('style', "display: inline");
-        console.log(data, 'filter')
-        //console.log(products, 'products')
-        getTbl(tbl, data.products, data.count,data.page, data.limit);
-      }
-    });
-    e.preventDefault();
  });
-}
 
+ 
 async function newFormAddOrUpdate(idForm,apiWay, h1Text, objValue){
 
   let inElem = document.getElementById('formFor');
@@ -160,12 +133,10 @@ async function newFormAddOrUpdate(idForm,apiWay, h1Text, objValue){
     e.preventDefault();
     addOrUpdate(idForm, apiWay, id);
   });
-
 }
 
 function addOrUpdate(idForm, apiWay, id=''){
   $('#info').text('');
-  console.log($(`#${idForm}`).serialize, 'serialize')
   $.ajax({
     url: apiWay,
     type: 'post',
@@ -175,25 +146,8 @@ function addOrUpdate(idForm, apiWay, id=''){
     }
   });
      $('#formFor').attr('style', "display: none");
-
 }
 
-function getAll(){
-
-  removeTbl(tbl);
-  $('#info').text('');
-
-  $.ajax({
-    url: '/api/products',
-    type: 'get',
-    success: function(data) {
-      $('#table').attr('style', "display: inline");
-      console.log(data, 'data')
-        getTbl(tbl, data.products, data.count,data.page, data.limit);
-    }
-  });
-
-}
 
 async function funcDelete(e){
   let par = e.closest('tr');
@@ -201,22 +155,14 @@ async function funcDelete(e){
   let idOfElem = par.firstElementChild.innerHTML;
   $('#info').text('');
 
-  console.log(idOfElem, 'id')
 
     await $.ajax({
       url: '/api/filter/'+idOfElem,
       type: 'delete',
       success: function(data) {
-        console.log(data, 'resultDeleted');
         $('#info').text(data);
       }
     });
-
-  getAll();
-  
-  console.log(this, 'this');
-  console.log(e, 'target');
-
 }
 
 async function funcUpdate(e){
@@ -227,12 +173,10 @@ async function funcUpdate(e){
   let quantity = price.nextElementSibling;
   let apiWay = '/api/filter/'+id.innerHTML;
 
-
   let objValue = {id: id.innerHTML, name: name.innerHTML, price: price.innerHTML, quantity: quantity.innerHTML }
   newFormAddOrUpdate('formUpdate', apiWay, 'Update data', objValue )  
 
   await $('#formFor').attr('style', "display: inline");
-  //await getAll();
 } 
 
 function removeTbl(elemTbl){
@@ -244,13 +188,11 @@ function removeTbl(elemTbl){
 }
 
 async function getTbl(elem, arr, countNum,page, limit){
-  console.log(arr, 'arrrrr')
    removeTbl(elem);
 
-
+  let theFirstRow = "<tr><th>id</th><th>Name</th><th>Price</th><th>Quantity</th><th>Update</><Delete>" 
 
   let str = arr.reduce(( item,current, index  ) => {
-   // console.log(item, 'item')
     let itemId = 'itemId' + String(index);
     return item + `<tr id='${itemId}'>
       <td>${current._id}</td>
@@ -262,20 +204,17 @@ async function getTbl(elem, arr, countNum,page, limit){
       </tr>
       `  }, '')
 
-  //console.log(str, 'str')
+  let resultTbl = theFirstRow + str;
 
-  elem.insertAdjacentHTML('beforeend', str);
+  elem.insertAdjacentHTML('beforeend', resultTbl);
   linkGenerator(listOfLinks, countNum,page, limit)
- 
 }
-
 
 function createEl(tag, par ){
 	let el = document.createElement(tag);
 		par.appendChild(el);
 		return el;
 }
-
 
 function linkGenerator(elemIn,countNotes,page, limit){
   elemIn.innerHTML = '';
@@ -285,29 +224,23 @@ function linkGenerator(elemIn,countNotes,page, limit){
     classVal = page == i ? 'class="active pages"' : 'class="pages"';
     elemStr += `<button data-page="${i}" ${classVal} >${i}</button>` ;
 
-console.log(pagesCount, 'pageCount')
   }
 
   elemIn.insertAdjacentHTML('afterbegin', elemStr)
  
-                $('button.pages').click(async function(e) {
-                  console.log(e.target.dataset.page, 'pages')
-                  await $('#page').val(e.target.dataset.page)
+    $('button.pages').click(async function(e) {
+      await $('#page').val(e.target.dataset.page)
 
-                      $.ajax({
-                        url: '/api/products',
-                        type: 'post',
-                        data: $('#filterForm').serialize(),
-                        success: function(data) {
-                          $('#table').attr('style', "display: inline");
-                          console.log(data, 'filter')
-                          //console.log(products, 'products')
-                          getTbl(tbl, data.products, data.count,data.page, data.limit);
-                        }
-                      });
-
-
-            });
+        $.ajax({
+          url: '/api/products',
+          type: 'post',
+          data: $('#filterForm').serialize(),
+          success: function(data) {
+          $('#table').attr('style', "display: inline");
+          getTbl(tbl, data.products, data.count,data.page, data.limit);
+        }
+      });
+  });
 }
 
 

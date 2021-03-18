@@ -10,30 +10,27 @@ function isEmptyObject(obj) {
 }
 
   const getLogs = async (arr, objBody) => {
-    console.log(objBody, 'objBody')
 
     let  log = arr;
 
-    if(!objBody.id && !objBody.name && !objBody.price && !objBody.quantity){
-      console.log(arr.length, 'length')
-      return arr;
-    } 
+   if(!objBody.id && !objBody.name && !objBody.price && !objBody.quantity) return arr ;
 
-    if(objBody._id){
+    if(objBody.id){
       log = await log.filter(prod => prod._id == objBody.id);
     }
 
     if(objBody.name){
-      log = await arr.filter(prod => prod.name == objBody.name);
+      log = await log.filter(prod => prod.name == objBody.name);
     }
 
     if(objBody.price){
-      console.log(objBody.price, 'objPrice')
-      log = await arr.filter(prod => prod.price <= Number( objBody.price ));
+      log = await log.filter(prod => prod.price <= Number( objBody.price ));
     }
 
     if(objBody.quantity == 'on'){
-      log = await log.filter( prod => prod.quantity < 0 );
+      log = await log.filter( prod => prod.quantity > 0 );
+      
+      console.log(log, 'logQuantity')
     }
 
     return log;
@@ -45,7 +42,6 @@ function cutArr(arr, page=1, limit=5){
   let skip = (page - 1) * limit;
   let store = arr.slice();
   let sendPart = store.splice(skip, limit);
-  console.log(sendPart, 'send')
   return sendPart
 
 }
@@ -53,38 +49,28 @@ function cutArr(arr, page=1, limit=5){
 
 module.exports = function (app) {
 
-  let storeFiltered = {};
-
   app.route('/api/products')
 
 
     .get(function (req, res){
-      //console.log(req, 'req')
 
        models.Products.find({})
         .then(products => {
-          res.json({ products:products, count: products.length,page:1, limit: 5 })
+
+          res.json({ products:products, count: products.length})
         })
        .catch( (err) => console.log(err, 'err0') )
       })
 
-
-
     .post(function (req, res){
-      console.log(req.body, 'req.body')
-      console.log(req.query, 'req.query')
 
        models.Products.find({})
         .then(products => {
-          //console.log(products, 'prods');
 
           getLogs(products, req.body)
+
             .then(result => {
-              storeFiltered = {products: result, limit: req.body.limit || 5};
-              console.log(result.length, 'length')
-              let cutBit = cutArr(result, req.body.page, req.body.limit);
-              console.log(cutBit, 'cutBit')
-              //console.log(result, 'result')
+              let cutBit = cutArr(result, req.body.page || 1, req.body.limit || 5);
               res.json({ products:cutBit, count: result.length, page: req.body.page || 1, limit:req.body.limit || 5});
             })
             .catch(err => console.log(err, 'err'));
@@ -92,22 +78,11 @@ module.exports = function (app) {
        .catch( (err) => console.log(err, 'err0') );
       })
 
-   app.route('/api/products/:page')
-
-    .get(function (req, res){
-
-      let pageOfLis = req.params.page;
-      let cutBit = cutArr(storeFiltered.result, pageOfList, storeFiltered.limit);
-        res.json({ products:cutBit, count: result.length , page: req.body.page || 1, limit: storeFiltered.limit});
- 
-    })
-
 
   app.route('/api/new-item')
 
     .post(function (req, res){
       let {name, price, quantity} = req.body;
-      //console.log(req.body, 'req.body.new')
       
       if(name && price && quantity){
         models.Products.create({name, price, quantity})
@@ -125,27 +100,22 @@ module.exports = function (app) {
       models.Products.deleteOne({_id: bookid})
         .then(doc => {
           if(doc.deletedCount === 1){
-            res.send('delete successful')
+            res.send('delete successful');
           }else{
-            res.send('no book exists')
+            res.send('no  product exists');
           }
         })
-        .catch(err => res.send('no book exists'))
-      //if successful response will be 'delete successful'
+        .catch(err => res.send('no product exists'))
     });
 
  app.route('/api/filter/:id')
 
     .get(function (req, res){
-
        let productId = req.params.id;
 
         models.Products.find({_id: productId})
-        .then(product => {
-              res.json(product)
-        })
-        .catch(err => console.log(err))
- 
+          .then(product => res.json(product) )
+          .catch(err => console.log(err))
       })
 
 
@@ -160,15 +130,13 @@ module.exports = function (app) {
             res.send('no product exists')
           }
         })
-        .catch(err => res.send('no book exists'))
+        .catch(err => res.send('no product exists'))
       
-      //if successful response will be 'delete successful'
     })
 
 
    .post(function (req, res){
       let productId = req.params.id;
-
 
       if(productId){
         let newData = {};
@@ -182,30 +150,30 @@ module.exports = function (app) {
     let answ;
         models.Products.findOneAndUpdate({_id: productId}, {$set: newData})
            .then(product => {
+             
               if(product){
-                answ = {  result: 'successfully updated', '_id': productId };
+                answ = 'successfully updated product ' + productId;
               }else{
-                answ = {  error: 'could not update', '_id': productId };
+                answ = 'could not update product with ID ' +  productId;
               }
-              res.json(answ)
+              res.json(answ);
 
             }).catch(err => {
               console.log(err, 'myErr');
-
             });
       }else{
-           res.json({error: 'no update field(s) sent', '_id': productId });
+           res.json('no update field(s) sent');
       }
    }else{
-     res.json({error: 'missing _id' });
+     res.json('missing _id' );
    }
-    })
+
+})
     
   app.route('/api/new-item')
 
     .post(function (req, res){
       let {name, price, quantity} = req.body;
-      //console.log(req.body, 'reqbodyNew')
       
       if(name && price && quantity){
         models.Products.create({name, price, quantity})
@@ -214,7 +182,6 @@ module.exports = function (app) {
       }else{
         res.send('Required field missing');
       }
-
   })
 
 };
