@@ -1,75 +1,24 @@
 'use strict';
 const models = require('../models');
 
-function removeDuplicates(originalArray, prop) {
-     let newArray = [];
-     let lookupObject  = {};
-
-     for(let i in originalArray) {
-        lookupObject[originalArray[i][prop]] = originalArray[i];
-     }
-
-     for(let i in lookupObject) {
-         newArray.push(lookupObject[i]);
-     }
-      return newArray;
- }
-
 function isEmptyObject(obj) {
     for (var i in obj) {
-        if (obj.hasOwnProperty(i)) {
-            return false;
-        }
+        if(obj.hasOwnProperty(i))  return false
     }
+
     return true;
 }
 
-async function getFilteredData (arr, objBody){
-
-  let store = [];
-
-  let filters = {};
-
-  if(objBody){
-    for(let key in objBody){
-      if(objBody[key] !== ''){
-        filters[key] = objBody[key];
-      }
-    }
-  }
-
-
-  if(isEmptyObject(filters)){
-    return arr;
-  }else{
-
-    for(let key in filters){
-      if(filters[key]){
-        for(let i = 0; i < arr.length; i++){
-          if(key != 'price' && arr[i][key] == objBody[key]){
-            await store.push(arr[i]);
-            //console.log(arr[i], 'arr[i]')
-          }else if(key == 'price' && arr[i][key] <= Number(objBody['price'])){
-            console.log(arr[i][key], 'key')
-            await store.push(arr[i]);
-          }
-        }
-      }
-    }
-
-    for(let key in filters){
-      store =  store.filter(item => key != 'price' && item[key] == filters[key] || key == 'price' && item[key] <= filters[key]);
-    }
-    return await removeDuplicates(store, '_id');
-  }
-
-}
-
   const getLogs = async (arr, objBody) => {
+    console.log(objBody, 'objBody')
 
     let  log = arr;
 
-    if(!objBody.id && !objBody.name && !objBody.price && !objBody.quantity) return arr;
+    if(!objBody.id && !objBody.name && !objBody.price && !objBody.quantity){
+      console.log(arr.length, 'length')
+      return arr;
+    } 
+
     if(objBody._id){
       log = await log.filter(prod => prod._id == objBody.id);
     }
@@ -87,54 +36,22 @@ async function getFilteredData (arr, objBody){
       log = await log.filter( prod => prod.quantity < 0 );
     }
 
-    //console.log(log, 'loggg')
     return log;
 }
 
 
-async function getFilteredData (arr, objBody){
-
-  let store = [];
-
-  let filters = {};
-
-  if(objBody){
-    for(let key in objBody){
-      if(objBody[key] !== '' && key != 'limit'){
-        filters[key] = objBody[key];
-      }
-    }
-  }
+function cutArr(arr, page=1, limit=5){
   
-
-
-  if(isEmptyObject(filters)){
-    return arr;
-  }else{
-
-    for(let key in filters){
-      if(filters[key]){
-        for(let i = 0; i < arr.length; i++){
-          if(key != 'price' && arr[i][key] == objBody[key]){
-            await store.push(arr[i]);
-            //console.log(arr[i], 'arr[i]')
-          }else if(key == 'price' && arr[i][key] <= Number(objBody['price'])){
-            await store.push(arr[i]);
-          }
-        }
-      }
-    }
-
-    for(let key in filters){
-      store =  store.filter(item => key != 'price' && item[key] == filters[key] || key == 'price' && item[key] <= filters[key]);
-    }
-    return await removeDuplicates(store, '_id');
-  }
+  let skip = (page - 1) * limit;
+  let sendPart = arr.slice(skip, limit);
+  return sendPart
 
 }
 
 
 module.exports = function (app) {
+
+  let storeFiltered = {};
 
   app.route('/api/products')
 
@@ -144,7 +61,7 @@ module.exports = function (app) {
 
        models.Products.find({})
         .then(products => {
-          res.json({ products:products, count: products.length })
+          res.json({ products:products, count: products.length,page:1, limit: 5 })
         })
        .catch( (err) => console.log(err, 'err0') )
       })
@@ -160,145 +77,26 @@ module.exports = function (app) {
 
           getLogs(products, req.body)
             .then(result => {
-              res.json({ products:result, count: result.length })
+              storeFiltered = {products: result, limit: req.body.limit || 5};
+              console.log(result.length, 'length')
+              let cutBit = cutArr(result, req.body.page, req.body.limit);
+              res.json({ products:cutBit, count: result.length, page: req.body.page || 1, limit:req.body.limit || 5});
             })
-            .catch(err => console.log(err, 'err'))
+            .catch(err => console.log(err, 'err'));
         })
-       .catch( (err) => console.log(err, 'err0') )
+       .catch( (err) => console.log(err, 'err0') );
       })
 
+   app.route('/api/products/:page')
 
-  /*
-    .get(async function (req, res){
-      console.log(req, 'req')
+    .get(function (req, res){
 
-        const { page = 1, limit = 5, name, price} = req.query;
+      let pageOfLis = req.params.page;
+      let cutBit = cutArr(storeFiltered.result, pageOfList, storeFiltered.limit);
+        res.json({ products:cutBit, count: result.length , page: req.body.page || 1, limit: storeFiltered.limit});
+ 
+    })
 
-
-       try {
-
-        const  productsFiltered = await models.Products.find({name, price })
-          .limit(limit * 1)
-          .skip((page - 1) * limit)
-          .exec();
-
-        const count = await models.Products.countDocuments();
-
-        res.json({
-          productsFiltered,
-          totalPages: Math.ceil(count / limit),
-          currentPage: page
-        });
-        } catch (err) {
-          console.error(err.message);
-        }
-      })
-
-        
-
-    .get(async function (req, res){
-
-      let page = req.params.page || 1;
-      let limit = req.body.limit || 3;
-      let count;
-      await models.Products.find({})
-          .then(docs =>  count = docs.length )
-          .catch(err => console.log(err, 'err'))
-      ;
-      console.log(count, 'count')
-
-      await models.Products.aggregate([
-            { $match: {} },    
-            { $skip: (page - 1) * limit },   
-            { $limit:  limit},
-        ])  
-
-        .then(products => {
-          console.log(count, 'counthere')
-          res.json({ products, count })
-        })
-       .catch( (err) => console.log(err, 'err0') )
-      })
-
-*/
-/*
-  .post(async function (req, res){
-    let name = req.body.name;
-    let obj = {};
-    
-    if(req.body._id){
-      obj._id = req.body.id;
-    }
-    
-   if(req.body.name != ''){
-      obj.name = req.body.name
-    }
-    
-   if(req.body.price != ''){
-      obj.price = { $lte: Number( req.body.price ) }
-    }
-
-    let page = req.body.page;
-    let limit = req.body.limit;
-      console.log(req.body, 'req.body')
-    console.log(obj, 'obj')
-
-    console.log(req.body.name, 'name')
-
-
-       try {
-
-        const  productsFiltered = await models.Products.find(obj)
-          
-          .limit(limit * 1)
-          .skip((page - 1) * limit)
-          .exec()
-         ;
-
-         for(let key of productsFiltered){
-          console.log(key, 'key')
-         }
-
-        const count = await models.Products.countDocuments();
-
-        res.json({
-          productsFiltered,
-          totalPages: Math.ceil(count / limit),
-          currentPage: page
-        });
-        } catch (err) {
-          console.error(err.message);
-        }  
-        })
-
-    .post(function (req, res){
-      console.log(req.body, 'req.body')
-      let page = req.params.page || 1;
-      let limit = req.body.limit || 3;
-      let count = models.Products.countDocuments();
-      console.log(count, 'count')
-
-      models.Products.aggregate([
-            { $match: {} },    
-            { $skip: (page - 1) * limit },   
-            { $limit:  limit - 1},
-        ])  
-
-        .then(products => {
-          console.log(products, 'prods');
-
-           getFilteredData(products, req.body)
-            .then( (filtered) => {
-              console.log(filtered, 'filtered')
-              res.json(JSON.stringify(filtered))
-            })
-            .catch(err => console.log(err, 'err'))
-        })
-       .catch( (err) => console.log(err, 'err0') )
-      })
-
-
-*/
 
   app.route('/api/new-item')
 
