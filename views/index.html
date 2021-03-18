@@ -129,14 +129,6 @@ function filterForm(){
         console.log(data, 'filter')
         //console.log(products, 'products')
         getTbl(tbl, data.products, data.count,data.page, data.limit);
-
-            $('button.pages').click(async function(e) {
-                  console.log(e.target.dataset.page, 'pages')
-                  await $('#page').val(e.target.dataset.page)
-                  await filterForm();                         
-
-            });
-
       }
     });
     e.preventDefault();
@@ -274,7 +266,7 @@ async function getTbl(elem, arr, countNum,page, limit){
 
   elem.insertAdjacentHTML('beforeend', str);
   linkGenerator(listOfLinks, countNum,page, limit)
-  
+ 
 }
 
 
@@ -297,6 +289,25 @@ console.log(pagesCount, 'pageCount')
   }
 
   elemIn.insertAdjacentHTML('afterbegin', elemStr)
+ 
+                $('button.pages').click(async function(e) {
+                  console.log(e.target.dataset.page, 'pages')
+                  await $('#page').val(e.target.dataset.page)
+
+                      $.ajax({
+                        url: '/api/products',
+                        type: 'post',
+                        data: $('#filterForm').serialize(),
+                        success: function(data) {
+                          $('#table').attr('style', "display: inline");
+                          console.log(data, 'filter')
+                          //console.log(products, 'products')
+                          getTbl(tbl, data.products, data.count,data.page, data.limit);
+                        }
+                      });
+
+
+            });
 }
 
 

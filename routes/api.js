@@ -43,7 +43,9 @@ function isEmptyObject(obj) {
 function cutArr(arr, page=1, limit=5){
   
   let skip = (page - 1) * limit;
-  let sendPart = arr.slice(skip, limit);
+  let store = arr.slice();
+  let sendPart = store.splice(skip, limit);
+  console.log(sendPart, 'send')
   return sendPart
 
 }
@@ -70,6 +72,7 @@ module.exports = function (app) {
 
     .post(function (req, res){
       console.log(req.body, 'req.body')
+      console.log(req.query, 'req.query')
 
        models.Products.find({})
         .then(products => {
@@ -80,6 +83,8 @@ module.exports = function (app) {
               storeFiltered = {products: result, limit: req.body.limit || 5};
               console.log(result.length, 'length')
               let cutBit = cutArr(result, req.body.page, req.body.limit);
+              console.log(cutBit, 'cutBit')
+              //console.log(result, 'result')
               res.json({ products:cutBit, count: result.length, page: req.body.page || 1, limit:req.body.limit || 5});
             })
             .catch(err => console.log(err, 'err'));
