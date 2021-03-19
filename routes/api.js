@@ -72,6 +72,7 @@ module.exports = function (app) {
           getLogs(products, req.body)
 
             .then(result => {
+              console.log(result, 'res')
               let cutBit = cutArr(result, req.body.page || 1, req.body.limit || 5);
               res.json({ products:cutBit, count: result.length, page: req.body.page || 1, limit:req.body.limit || 5});
             })
@@ -136,16 +137,19 @@ module.exports = function (app) {
 
  app.route('/api/filter/:id')
 
+  /*
     .get(function (req, res){
        let productId = req.params.id;
 
         models.Products.find({_id: productId})
         .then(product => {
+          console.log(product, 'doc')
           res.json(product); 
         })
           .catch(err => console.log(err))
       })
 
+*/
 
     
     .delete(function(req, res){

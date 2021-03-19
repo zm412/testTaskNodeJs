@@ -11,31 +11,8 @@ const fccTestingRoutes  = require('./routes/fcctesting.js');
 const runner            = require('./test-runner');
 const models = require('./models');
 
-const url = "mongodb://localhost:27017/";
 const multer  = require("multer");
-
-
-/*
-const MongoClient = require("mongodb").MongoClient;
-const mongoClient = new MongoClient(url, { useUnifiedTopology: true });
-
-//let users = [{name: "Bob", age: 34} , {name: "Alice", age: 21}, {name: "Tom", age: 45}];
-mongoClient.connect(function(err, client){
-
-    const db = client.db("dataB");
-    const collection = db.collection("products");
-    collection.insertMany(users, function(err, result){
-
-        if(err){
-            return console.log(err);
-        }
-        console.log(result.ops);
-        client.close();
-    });
-});
-
-*/
-
+const url = "mongodb://localhost:27017/";
 
 const app = express();
 
@@ -87,7 +64,7 @@ const db = () => {
     .on('close', () => console.log('Db connection closed'))
     .on('open', () => resolve(mongoose.connections[0]));
 
-    mongoose.connect(url, {
+    mongoose.connect(config.MONGO_URI_FREECAMP, {
               useNewUrlParser: true,
               useFindAndModify: false,
               useUnifiedTopology: true
@@ -97,7 +74,7 @@ const db = () => {
 
 db().
   then(info => {
-  console.log((`Connected to ${info.host}:${info.port}/${info.    name}`))
+  console.log((`Connected to ${info.host}:${info.port}/${info.name}`))
 
 }).catch( () => {
   console.error('Unable to connect to database');
@@ -107,6 +84,7 @@ db().
 
 
 //Start our server and tests!
+
 app.listen(process.env.PORT || 3000, function () {
   console.log("Listening on port " + process.env.PORT);
   if(process.env.NODE_ENV==='test') {
