@@ -68,6 +68,7 @@
   $('#filterForm').submit(function(e) {
     $('#list').empty();
     $('#formFor').attr('style', "display: none");
+    $('#uploadPic').attr('style', "display: none");
 
     $.ajax({
       url: '/api/products',
@@ -87,6 +88,7 @@
         $('#list').empty();
       $('#formFor').attr('style', "display: none");
       $('#info').text('');
+      $('#uploadPic').attr('style', "display: none");
 
       $.ajax({
         url: '/api/products',
@@ -113,11 +115,6 @@
 
  });
 
-
-function uploadFile(){
-  let inElem = document.getElementById('divUploadForm');
-  inElem.innerHTML = '';
-}
  
 async function newFormAddOrUpdate(idForm,apiWay, h1Text, objValue){
 
@@ -177,7 +174,7 @@ async function funcDelete(e){
 }
 
 async function funcUploadPic(e){
-  let par = e.closest('tr');
+  let par = e.closest('div');
   let id = par.firstElementChild.innerHTML;
   let url ="/api/upload/" + id; 
 
@@ -186,7 +183,7 @@ async function funcUploadPic(e){
 
     <form id='formUpload' action=${url} method="post" enctype="multipart/form-data" class='border'>
       <input type="file" name="filedata" />
-    <input  id=${id} value=${id} />
+      <input  id=${id} value=${id} />
       <input type="submit" value="Send" />
     </form>
 `)
@@ -214,37 +211,6 @@ function removeTbl(elemTbl){
     }
   }
 }
-/*
-async function getTbl(elem, arr, countNum,page, limit){
-   removeTbl(elem);
-
-  let theFirstRow = "<tr><th>id</th><th>Name</th><th>Price</th><th>Quantity</th><th>Update</th><th>Delete</th><th>Upload Pic</th><th>ShowPic</th></tr>" 
-
-  let str = arr.reduce(( item,current, index  ) => {
-    let img = current.image? '../' + current.image.path : null;
-    let isPic = current.image ? 'thereIsPic' : 'thereIsNoPic';
-    let imgHref = current.image ? img : '';
-    console.log(imgHref, 'imgHref')
-    let itemId = 'itemId' + String(index);
-    return item + `<tr id='${itemId}'>
-      <td>${current._id}</td>
-      <td>${current.name}</td>
-      <td>${current.price}</td>
-      <td>${current.quantity}</td>
-      <td><button onclick="funcUpdate(this)">Update</button></td>
-      <td><button onclick="funcDelete(this)">Delete</button></td>
-      <td><button onclick="funcUploadPic(this)">UploadPic</button></td>
-      <td><button onclick="showPic(this)" data-src=${imgHref}>${isPic}</button></td>
-      </tr>
-      `  }, '')
-
-  let resultTbl = theFirstRow + str;
-
-  elem.insertAdjacentHTML('beforeend', resultTbl);
-  linkGenerator(listOfLinks, countNum,page, limit)
-}
-
-*/
 
 async function getTbl(elem, arr, countNum,page, limit){
 
@@ -252,10 +218,12 @@ async function getTbl(elem, arr, countNum,page, limit){
 
   $('#list').empty();
   let str = arr.reduce(( item,current, index  ) => {
-    let img = current.image? '../' + current.image.path : '../uploads/noPic.jpg';
+    let img = current.image? '../' + current.image.path : '../uploads/noPic.png';
+    console.log(img)
     let itemId = 'itemId' + String(index);
+
     return item + `
-      <div id=${itemId} class='itemBox border' background=${img}">
+      <div id=${itemId} class='itemBox border' style="background-image:url(${img});">
         <h6>${current._id}</h6>
         <h6>${current.name}</h6>
         <h6>${current.price}</h6>
@@ -264,6 +232,7 @@ async function getTbl(elem, arr, countNum,page, limit){
         <button onclick="funcDelete(this)">Delete</button>
         <button onclick="funcUploadPic(this)">UploadPic</button>
       </div> 
+
       `  }, '')
 
 
